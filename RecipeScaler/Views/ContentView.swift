@@ -25,12 +25,13 @@ struct ContentView: View {
                     ForEach(recipes) { recipe in
                         //Text("Recipe at \(recipe.timestamp!, formatter: recipeFormatter)")
                         //RecipeDetailView(recipe: recipe)
-                        NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
+                        NavigationLink(destination: RecipeDetailView(recipe: recipe).environmentObject(recipe)) {
                             HStack {
                                 //Image(recipe.recipeIcon ?? "default")
                                 Text(recipe.title!)
                             }
                         }
+                        
                     }
                     .onDelete(perform: deleteRecipes)
                 }

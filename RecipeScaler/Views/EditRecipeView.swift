@@ -12,21 +12,24 @@ struct EditRecipeView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     @EnvironmentObject var recipe: Recipe
-    //let recipe: Recipe
     
-    init(recipe: Recipe) {
-        //self.recipe = recipe
-        setFieldValues(recipe: self.recipe)
-    }
-    
-    @EnvironmentObject var sharedRecipe: Recipe
     @State var recipeTitle: String = ""
     @State var numberOfServering: Int = 0
     @State var ovenTemp: String = ""
+    @State private var isShowPhotoLibrary: Bool = false
 
-
+    var sourceType: UIImagePickerController.SourceType = .photoLibrary
     
     var body: some View {
+        Button(action: {
+            isShowPhotoLibrary = true
+        }) {
+            ZStack {
+                Image(systemName: "pencil")
+                    .renderingMode(.original)
+                Text("Edit")
+            }
+        }
         TextField("\(recipe.title!)", text: $recipeTitle)
         Text("Created on: \(recipe.timestamp!, formatter: dateFormatter)")
         Text("Last Updated: \(recipe.lastUpdated!, formatter: dateFormatter)")
@@ -44,7 +47,12 @@ struct EditRecipeView: View {
             updateRecipe()
             self.presentation.wrappedValue.dismiss()
         }
+        .sheet(isPresented: $isShowPhotoLibrary) {
+            ImagePicker(sourceType: .photoLibrary)
+        }
     }
+    
+    
     
     func setFieldValues(recipe: Recipe) {
         recipeTitle = recipe.title!

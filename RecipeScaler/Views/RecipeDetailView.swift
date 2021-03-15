@@ -8,33 +8,22 @@
 import SwiftUI
 import CoreData
 
-enum ActiveSheet {
-   case ingredient, step, recipeDetails
+enum ActiveSheet: Identifiable {
+    case ingredient, step, recipeDetails
+    var id: Int {
+        hashValue
+    }
 }
 
 struct RecipeDetailView: View {
     
     @State private var showAddModal = false
-    @State private var activeSheet: ActiveSheet = .ingredient
+    @State private var activeSheet: ActiveSheet?
+    @EnvironmentObject var recipe: Recipe
     
     @Environment(\.managedObjectContext) private var viewContext
-
-    /*
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Ingredient.id, ascending: true)],
-        predicate: NSPredicate(format: "ingredientInput == %@", selectedRecipe),
-        animation: .default)
- */
-    
-    var ingredientsRequest: FetchRequest<Ingredient>
-    var stepRequest: FetchRequest<Step>
-    private var ingredients: FetchedResults<Ingredient>{ingredientsRequest.wrappedValue}
-    private var steps: FetchedResults<Step>{stepRequest.wrappedValue}
-    
-    let recipe: Recipe
     
     init(recipe: Recipe) {
-        self.recipe = recipe
         self.ingredientsRequest = FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \Ingredient.seqNum, ascending: true)],
                                                predicate: NSPredicate(format: "recipeInput == %@", recipe),
                                                animation: .default)
@@ -43,6 +32,10 @@ struct RecipeDetailView: View {
                                        animation: .default)
     }
     
+    var ingredientsRequest: FetchRequest<Ingredient>
+    var stepRequest: FetchRequest<Step>
+    private var ingredients: FetchedResults<Ingredient>{ingredientsRequest.wrappedValue}
+    private var steps: FetchedResults<Step>{stepRequest.wrappedValue}
     
     
     var body: some View {
@@ -52,18 +45,17 @@ struct RecipeDetailView: View {
                     Text("Last Updated: \(recipe.timestamp!, formatter: dateFormatter)")
                     Spacer()
                     Button("Update Details") {
-                        activeSheet = .recipeDetails
+                        self.activeSheet = .recipeDetails
                         showAddModal = true
                     }
                 }
                 List {
                     ForEach(ingredients, id: \.self) { ingredient in
                         HStack {
-                            //Image(recipe.recipeIcon ?? "default")
+                            //Image(recipe.recipeImage ?? "default")
                             Text(formatQuantity(qty: ingredient.displayQty!, partialQty: ingredient.displayPartQty!))
                             Text("\(ingredient.unit!)")
                             Text("\(ingredient.title!)")
-
                         }
                     }
                     .onDelete(perform: deleteIngredient)
@@ -81,7 +73,7 @@ struct RecipeDetailView: View {
                 HStack {
                     Spacer()
                     Button(action: {
-                        activeSheet = .ingredient
+                        self.activeSheet = .ingredient
                         showAddModal = true
                     }) {
                         Label("Add Ingredient", systemImage: "plus")
@@ -92,7 +84,6 @@ struct RecipeDetailView: View {
                         HStack {
                             Text("\(step.seqNum). ")
                             Text("\(step.directions!)")
-
                         }
                     }
                     .onDelete(perform: deleteIngredient)
@@ -103,7 +94,7 @@ struct RecipeDetailView: View {
                 HStack {
                     Spacer()
                     Button(action: {
-                        activeSheet = .step
+                        self.activeSheet = .step
                         showAddModal = true
                     }) {
                         Label("Add Step", systemImage: "plus")
@@ -113,17 +104,17 @@ struct RecipeDetailView: View {
             }
             
         }
-        .environmentObject(recipe)
-        .sheet(isPresented: $showAddModal, onDismiss: {
-        }) {
-            if activeSheet == .ingredient {
-                AddIngredientView(recipe: recipe, numOfIng: ingredients.count)
-            } else if activeSheet == .step {
-                AddStepView(recipe: recipe, numOfSteps: steps.count)
-            } else if activeSheet == .recipeDetails {
-                EditRecipeView(recipe: recipe)
+        .sheet(item: $activeSheet, onDismiss: {
+            activeSheet = nil
+        }) { item in
+            switch item {
+            case .recipeDetails:
+                EditRecipeView().environmentObject(self.recipe)//recipe: recipe)
+            case .ingredient:
+                AddIngredientView(numOfIng: ingredients.count).environmentObject(self.recipe)
+            case .step:
+                AddStepView(numOfSteps: steps.count).environmentObject(self.recipe)
             }
-            
         }
     }
 
