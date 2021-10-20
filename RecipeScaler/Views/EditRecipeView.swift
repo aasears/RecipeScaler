@@ -25,9 +25,11 @@ struct EditRecipeView: View {
             isShowPhotoLibrary = true
         }) {
             ZStack {
-                Image(systemName: "pencil")
-                    .renderingMode(.original)
-                Text("Edit")
+                Image(systemName: "photo")
+                    .frame(width: 150, height: 150, alignment: .center)
+                    .cornerRadius(75)
+                    .overlay(RoundedRectangle(cornerRadius: 75)
+                                .stroke(Color.black, lineWidth: 4))
             }
         }
         TextField("\(recipe.title!)", text: $recipeTitle)
@@ -63,10 +65,10 @@ struct EditRecipeView: View {
         
         if recipeTitle != "" {
             recipe.title = recipeTitle
+            recipe.lastUpdated = Date()
         } else {
             // Do nothing for now
         }
-        recipe.lastUpdated = Date()
         
         
         do {

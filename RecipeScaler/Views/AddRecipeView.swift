@@ -25,11 +25,19 @@ struct AddRecipeView: View {
             Form {
                 TextField("Recipe Title...", text: $recipeTitle)
                 Button("Save") {
-                    addRecipe(recipeTitle: recipeTitle)
+                    if recipeTitle.isEmpty {
+                        
+                    } else {
+                        addRecipe(recipeTitle: recipeTitle)
+                        self.presentation.wrappedValue.dismiss()
+                    }
+                }
+                Button("Cancel") {
                     self.presentation.wrappedValue.dismiss()
                 }
             }
             .navigationBarTitle("Add New Recipe")
+            
         }
                 
     }

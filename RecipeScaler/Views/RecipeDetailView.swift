@@ -39,7 +39,6 @@ struct RecipeDetailView: View {
     
     
     var body: some View {
-        NavigationView {
             VStack(alignment: .leading) {
                 HStack {
                     Text("Last Updated: \(recipe.timestamp!, formatter: dateFormatter)")
@@ -103,7 +102,6 @@ struct RecipeDetailView: View {
                 Spacer()
             }
             
-        }
         .sheet(item: $activeSheet, onDismiss: {
             activeSheet = nil
         }) { item in
